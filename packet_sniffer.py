@@ -7,7 +7,7 @@ import abc
 import argparse
 import time
 from itertools import count
-from socket import ntohs, socket, PF_PACKET, SOCK_RAW
+from socket import ntohs, socket, PF_PACKET, SOCK_RAW # PF_PACKET not in 3.9 :(
 
 import protocols
 
@@ -15,6 +15,7 @@ i = ' ' * 4  # Basic indentation level
 
 
 class PacketSniffer(object):
+    
     def __init__(self, interface: str):
         self.interface = interface
         self.raw_packet = None
@@ -47,7 +48,7 @@ class PacketSniffer(object):
                     self.protocol_queue.append(protocol.encapsulated_proto)
                     start = end
                 self.data = self.raw_packet[end:]
-                self.__notify_all(self)
+                self.__notify_all(self) # How can you unpack the instance itself? since .__notify_all takes *args
 
 
 class OutputMethod(abc.ABC):
@@ -55,7 +56,7 @@ class OutputMethod(abc.ABC):
     further processing and/or output of the information gathered by
     the subject class."""
 
-    def __init__(self, subject):
+    def __init__(self, subject: PacketSniffer):
         subject.register(self)
 
     @abc.abstractmethod
@@ -64,7 +65,8 @@ class OutputMethod(abc.ABC):
 
 
 class SniffToScreen(OutputMethod):
-    def __init__(self, subject, *, display_data: bool):
+    
+    def __init__(self, subject: PacketSniffer, *, display_data: bool):
         super().__init__(subject)
         self.p = None
         self.display_data = display_data
